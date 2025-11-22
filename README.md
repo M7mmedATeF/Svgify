@@ -7,7 +7,7 @@
 
 `Svgify` is a lightweight React component designed to dynamically render and style SVG icons with smart color mixing and transparency preservation. It fetches SVG files and automatically adapts them to use `currentColor`, making them fully themeable.
 
-## ✨ Key Updates (v3.0.0 - Beta)
+## ✨ Key Updates (v4.0.0 - Beta)
 
 ### 🎨 Smart Color Mixing
 - **Automatic transparency preservation** using CSS `color-mix()` function
@@ -55,7 +55,7 @@ Install the package via npm:
 npm install @sumcode/svgify
 ```
 
-~~Add StyleSheet to your _`App.jsx`_ file:~~ (No longer needed in v3.0.0+)
+~~Add StyleSheet to your _`App.jsx`_ file:~~ (No longer needed in v4.0.0+)
 
 ```js
 // import "@sumcode/svgify/styles"; // Not needed anymore
@@ -210,7 +210,7 @@ Exhaustive testing with 10K randomly generated icons: [🔗 Live Demo](https://s
 
 ## 📝 Changelog
 
-### v3.0.0 (Beta)
+### v4.0.0 (Beta)
 - ✨ Smart color mixing with transparency preservation
 - ✨ Duotone icon support
 - ✨ Enhanced FontWeight modes (default, fill, stroke, both)
