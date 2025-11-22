@@ -1,17 +1,38 @@
-# Svgify
+# 🎨 Svgify
 
 <div style="display:flex; justify-content:center; margin-inline: auto; margin-block: 3rem 1rem; width: 100%;">
 <img src="https://res.cloudinary.com/dclbtusww/image/upload/v1725670993/Sumcode/Svgify/spkctkwkydsmnvki85di.png" alt="Svgify Logo" style="width: 100%; object-fit: contain;" />
 </div>
 <br/>
-`Svgify` is a lightweight React component designed to dynamically render and style SVG icons. It fetches SVG files from the `public/assets/icons` directory, allowing you to easily integrate scalable vector graphics into your React application with customizable properties.
 
-## 1. Features
+`Svgify` is a lightweight React component designed to dynamically render and style SVG icons with smart color mixing and transparency preservation. It fetches SVG files and automatically adapts them to use `currentColor`, making them fully themeable.
 
--   **Dynamic SVG Rendering:** Fetches and displays SVG icons based on the provided `IconName`.
--   **Customizable Styling:** Supports inline styles, CSS classes, and different font weights (fill, stroke, or both).
--   **Scalable Icons:** Adjust the size of your icons with the `Scale` factor that will be multiplied by css `font-size` property.
--   **Icons Caching:** Icons is being cached in `localstorage` for better performance.
+## ✨ Key Updates (v3.0.0 - Beta)
+
+### 🎨 Smart Color Mixing
+- **Automatic transparency preservation** using CSS `color-mix()` function
+- **Opacity detection** from both `opacity` attributes and color alpha channels
+- **Duotone icon support** - preserves multi-color icons with varying transparency levels
+
+### 🎯 Enhanced FontWeight Modes
+- **`default`**: Preserves original icon structure (fill-only, stroke-only, or both)
+- **`fill`**: Forces all elements to use fill only
+- **`stroke`**: Forces all elements to use stroke only  
+- **`both`**: Forces all elements to have both fill and stroke
+
+### ⚛️ React 19 Compatible
+- Fully tested and compatible with React 19.x
+- Uses latest React patterns and hooks
+
+## 🚀 Features
+
+-   🎯 **Dynamic SVG Rendering:** Fetches and displays SVG icons based on the provided `IconName`
+-   🎨 **Smart Color Mixing:** Automatically converts colors to use `currentColor` while preserving transparency
+-   🌈 **Duotone Support:** Handles icons with multiple colors and transparency levels
+-   💅 **Customizable Styling:** Supports inline styles, CSS classes, and different font weights
+-   📏 **Scalable Icons:** Adjust the size of your icons with the `Scale` factor
+-   ⚡ **Icons Caching:** Icons are cached in `localStorage` for better performance
+-   🎭 **Class-based SVG Support:** Automatically inlines `<style>` blocks and removes classes
 
 ##
 
@@ -24,38 +45,26 @@
 ![issues](https://img.shields.io/github/issues/M7mmedATeF/svgify.svg?style=flat-square)
 ![GitHub stars](https://img.shields.io/github/stars/M7mmedATeF/svgify.svg?style=social)
 
-The project is still in its beta version so some errors may occur or some icons may not accept the changes .. so please be helpful and report us for any problems you face.
+> **⚠️ Note:** The new color mixing and duotone features are in beta. Please report any issues you encounter.
 
-## 2. Updates
-
-1.  Fix caching issues `override existing data in cache`.
-2.  Control icon saving path
-3.  Now you can customize fetching method
-4.  Handle multiple fetching for same icon
-5.  Exhaustive testing of 10K icon randomly generated from 70 icon is now available in (sec 3.0)
-
-## 3. Testing
-
-For Exhaustive 10K icon is being randomly generated from 70 icon [click here](https://svgify-exhaustive.netlify.app/)
-
-## 4. Basic Installation
+## 📦 Installation
 
 Install the package via npm:
 
-```
+```bash
 npm install @sumcode/svgify
 ```
 
-Add StyleSheet to your _`App.jsx`_ file.
+~~Add StyleSheet to your _`App.jsx`_ file:~~ (No longer needed in v3.0.0+)
 
 ```js
-import "@sumcode/svgify/styles";
+// import "@sumcode/svgify/styles"; // Not needed anymore
 ```
 
-Initiate folder structure:
+### 📁 Folder Structure
 
--   Make folder _`public/assets/icons`_.
--   Download your _`YOUR_ICON_NAME.svg`_ in the folder.
+-   Create folder _`public/assets/icons`_
+-   Add your _`YOUR_ICON_NAME.svg`_ files
 
 ```
 .
@@ -63,41 +72,71 @@ Initiate folder structure:
     ├── node_modules
     ├── public
     │   └── assets
-    │       └── icons (Add your svg icons here)
+    │       └── icons 📂 (Add your svg icons here)
     │           └── YOUR_ICON_NAME.svg
     └── src
-        └── app.jsx (Add stylesheet here)
+        └── app.jsx
 ```
 
-## 5. Example
+## 🎯 Basic Usage
 
-```js
-import "./App.css";
+```jsx
 import Svgify from "@sumcode/svgify";
 
 function App() {
     return (
-        <>
-            <Svgify IconName="YOUR_ICON_NAME" Scale={1.2} FontWeight="stroke" />
-        </>
+        <div style={{ color: "blue" }}>
+            {/* Icon will inherit blue color */}
+            <Svgify IconName="YOUR_ICON_NAME" Scale={1.2} />
+        </div>
     );
 }
-
-export default App;
 ```
 
-## 6. For version controlling ( optional - recommended for icon changing with the same name )
+## 🎨 FontWeight Modes
 
-```js
-import React from "react";
+```jsx
+import Svgify from "@sumcode/svgify";
+
+function App() {
+    return (
+        <div>
+            {/* Default: preserves original structure */}
+            <Svgify IconName="icon" FontWeight="default" />
+            
+            {/* Fill only: forces fill on all elements */}
+            <Svgify IconName="icon" FontWeight="fill" />
+            
+            {/* Stroke only: forces stroke on all elements */}
+            <Svgify IconName="icon" FontWeight="stroke" />
+            
+            {/* Both: forces both fill and stroke */}
+            <Svgify IconName="icon" FontWeight="both" />
+        </div>
+    );
+}
+```
+
+## 🌈 Duotone Icons (Beta)
+
+Svgify automatically handles duotone icons by preserving transparency:
+
+```jsx
+// Icon with opacity="0.5" will be rendered as:
+// fill="color-mix(in srgb, currentColor 50%, transparent)"
+<Svgify IconName="duotone-icon" />
+```
+
+## 🔄 Version Control (Recommended)
+
+```jsx
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
-import { Svgifier } from "@sumcode/svgify";
+import { Svgifier } from "@sumcode/svgify/SvgifyContext";
 
 createRoot(document.getElementById("root")!).render(
     <StrictMode>
-        {/* Add Svgify Provider around your routes */}
         <Svgifier version={1} clearForOldVersion>
             <App />
         </Svgifier>
@@ -105,61 +144,88 @@ createRoot(document.getElementById("root")!).render(
 );
 ```
 
-| Parameter            | Type                                                               | Initial value          | Usage                                                                                                                                         |
-| :------------------- | :----------------------------------------------------------------- | :--------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------- |
-| `version`            | `Number`\*                                                         | `1`                    | Your current icon's version `should be different from the old one`                                                                            |
-| `clearForOldVersion` | `Boolean`?                                                         | `false`                | needs to be activated for upgrading from versions older than `2.0.0` <br/> _`(recommended to be disabled if starting with version >= 2.0.0)`_ |
-| `base_path`          | `string`?                                                          | `/assets/icons/`       | Path of icon's folder starting from public folder                                                                                             |
-| `FetchIcon`          | `(Icon_Path: string) => Promise<AxiosResponse<unknown, unknown>>`? | `axios.get(Icon_Path)` | Custom function to fetch the icon (Head to section 7.0 for example)                                                                           |
+| Parameter            | Type      | Default          | Description                                                                     |
+| :------------------- | :-------- | :--------------- | :------------------------------------------------------------------------------ |
+| `version`            | `number`  | `1`              | Current icon version (increment to clear cache)                                 |
+| `clearForOldVersion` | `boolean` | `false`          | Enable for upgrading from versions < 2.0.0                                      |
+| `base_path`          | `string`  | `/assets/icons/` | Path to icons folder from public directory                                      |
+| `FetchIcon`          | `function`| `axios.get`      | Custom fetch function (see section below)                                       |
 
-## 7. Custom fetching function
+## 🔧 Custom Fetching Function
 
-```javascript
-    import React from "react";
-import { StrictMode } from "react";
-import { createRoot } from "react-dom/client";
-import App from "./App.tsx";
-import "./index.css";
-import "@sumcode/svgify/styles";
-import { Svgifier } from "@sumcode/svgify";
+```jsx
+import { Svgifier } from "@sumcode/svgify/SvgifyContext";
 import axios from "axios";
 
-/*
- * for this example:
- *      icon_path = "/assets/iconization/YOUR_ICON_NAME"
- */
 const FetchIcon = async (icon_path: string) => {
-    return axios.get(`http://YOUR_SERVER_PUBLIC_URI.com/${icon_path}`);
+    return axios.get(`http://YOUR_SERVER.com/${icon_path}`);
 };
 
 createRoot(document.getElementById("root")!).render(
     <StrictMode>
         <Svgifier
-            base_path="/assets/iconization" // Changing public icon folder path
+            base_path="/assets/iconization"
             version={2}
             FetchIcon={FetchIcon}
-            clearForOldVersion>
+            clearForOldVersion
+        >
             <App />
         </Svgifier>
     </StrictMode>
 );
-
 ```
 
-## 7. Parameters
+## ⚙️ Component Props
 
-| Parameter         | Type                     | Initial value | Usage                                                            |
-| :---------------- | :----------------------- | :------------ | :--------------------------------------------------------------- |
-| `IconName`        | `string`\*               | `""`          | The name of the icon in the mentioned path without its extension |
-| `FontWeight`      | `string`?                | `fill`        | Specifies the type of the icon `"stroke"` , `"fill"` , `"both"`  |
-| `Scale`           | `float`?                 | `1`           | The factor to be multiplied by the styled `font-size`            |
-| `className`       | `string`?                | `""`          | Custom ClassName to be passed to the `span` element              |
-| `LoadingElement`  | `"" \| React.ReactNode`? | `""`          | The text or element to be displayed while fetching the svg       |
-| `NotFoundElement` | `"" \| React.ReactNode`? | `""`          | The text or element to be displayed on fetch error               |
+| Parameter         | Type                     | Default     | Description                                                      |
+| :---------------- | :----------------------- | :---------- | :--------------------------------------------------------------- |
+| `IconName`        | `string`*                | `""`        | Icon name without extension                                      |
+| `FontWeight`      | `string`                 | `"default"` | Display mode: `"default"` \| `"fill"` \| `"stroke"` \| `"both"`  |
+| `Scale`           | `number`                 | `1`         | Size multiplier (applied to font-size)                           |
+| `className`       | `string`                 | `""`        | Custom CSS class for the wrapper span                            |
+| `style`           | `React.CSSProperties`    | `{}`        | Inline styles for the wrapper span                               |
+| `LoadingElement`  | `"" \| React.ReactNode`  | `""`        | Element shown while loading                                      |
+| `NotFoundElement` | `"" \| React.ReactNode`  | `""`        | Element shown on error                                           |
 
-## 8. Author
+## 🔍 How It Works
 
-<p style="margin-bottom: 5px">Mohammed Atef</p>
+### Color Processing Pipeline
+1. 📝 **Style Inlining**: Converts `<style>` blocks to inline styles
+2. 👁️ **Opacity Detection**: Reads `opacity` attributes and color alpha channels
+3. 🎨 **Color Mixing**: Replaces colors with `color-mix(in srgb, currentColor X%, transparent)`
+4. ⚖️ **FontWeight Application**: Applies fill/stroke logic based on mode
 
--   [LinkedIn](https://www.linkedin.com/in/m7mmed3atef/)
--   [Github](https://github.com/M7mmedATeF)
+### Example Transformation
+```xml
+<!-- Input SVG -->
+<path opacity="0.5" fill="#FF0000" />
+
+<!-- Output (processed by Svgify) -->
+<path fill="color-mix(in srgb, currentColor 50%, transparent)" stroke="none" />
+```
+
+## 🧪 Testing
+
+Exhaustive testing with 10K randomly generated icons: [🔗 Live Demo](https://svgify-exhaustive.netlify.app/)
+
+## 📝 Changelog
+
+### v3.0.0 (Beta)
+- ✨ Smart color mixing with transparency preservation
+- ✨ Duotone icon support
+- ✨ Enhanced FontWeight modes (default, fill, stroke, both)
+- ⚛️ React 19 compatibility
+- 🚀 Removed CSS dependency
+- 🐛 Fixed icon update on prop change
+
+## 👨‍💻 Author
+
+**Mohammed Atef**
+
+-   💼 [LinkedIn](https://www.linkedin.com/in/m7mmed3atef/)
+-   🐙 [Github](https://github.com/M7mmedATeF)
+-   📧 [Email](mailto:mohammed.atef.ewais@gmail.com)
+
+## 📄 License
+
+MIT © [Mohammed Atef](https://github.com/M7mmedATeF)

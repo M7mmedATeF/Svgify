@@ -2,163 +2,131 @@ import React, { useEffect, useState } from "react";
 import parse from "html-react-parser";
 import { SvgifyProps } from "./types";
 import { useSvgifyContext } from "./SvgifyContext";
+import {
+    inlineStyleBlocks,
+    processElementColors,
+    cleanRootSvg,
+    adjustSvgDimensions,
+} from "./svgProcessing";
 
 /**
- * Svgify component: Fetches and displays an SVG icon with various customization options.
+ * Svgify component: Fetches and displays SVG icons with smart color mixing and customization.
  *
- * @param IconName The name of the SVG icon (filename without extension).
- * @param FontWeight Font weight for the icon (default is "fill").
- * @param Scale Scale factor for the icon size (default is 1).
- * @param className Custom CSS class for the SVG icon.
- * @param style Inline styles for the component.
- * @param LoadingElement Element to show while the SVG is loading.
- * @param NotFoundElement Element to show if the SVG is not found.
- * @returns A span that includes the SVG icon.
+ * Features:
+ * - Automatic color inheritance via currentColor
+ * - Transparency preservation using color-mix()
+ * - FontWeight modes: default, fill, stroke, both
+ * - Caching for performance
+ * - Support for class-based and inline styles
+ *
+ * @param IconName - The name of the SVG icon (filename without extension)
+ * @param FontWeight - Display mode: "default" | "fill" | "stroke" | "both" (default: "default")
+ * @param Scale - Scale factor for the icon size (default: 1)
+ * @param className - Custom CSS class for the SVG icon
+ * @param style - Inline styles for the component
+ * @param LoadingElement - Element to show while the SVG is loading
+ * @param NotFoundElement - Element to show if the SVG is not found
  */
 const Svgify: React.FC<SvgifyProps> = ({
     IconName = "",
     className = "",
     Scale = 1,
-    FontWeight = "fill",
+    FontWeight = "default",
     LoadingElement = "",
     NotFoundElement = "",
     ...props
 }) => {
     const [svgContent, setSvgContent] = useState<string | null>(null);
-    const [fontStyle, setFontStyle] = useState(`svg_modifier_style_both`);
     const { version, clearForOldVersion, FetchIcon } = useSvgifyContext();
-    const [fetched, setFetched] = useState<boolean>(false);
 
     useEffect(() => {
-        if (!fetched) {
+        const cacheKey = `svgify_${version}_${IconName}_${FontWeight}`;
+
+        // Clean up old cache versions
+        const cleanupOldCache = () => {
             const cachedVersion =
                 Number(localStorage.getItem("svgify_cached_version")) || -1;
 
-            if (cachedVersion != version) {
+            if (cachedVersion !== version) {
                 localStorage.setItem(
                     "svgify_cached_version",
                     JSON.stringify(version)
                 );
 
+                // Remove old version entries
                 for (const key of Object.keys(localStorage)) {
                     if (
                         key.startsWith(`svgify_`) &&
                         !key.includes(`${version}`) &&
                         key !== "svgify_cached_version"
-                    )
+                    ) {
                         localStorage.removeItem(key);
+                    }
                 }
-                if (clearForOldVersion)
+
+                if (clearForOldVersion) {
                     localStorage.removeItem(`svgify_${IconName}`);
+                }
             }
+        };
 
-            // Update font style based on FontWeight prop
-            switch (FontWeight) {
-                case "fill":
-                    setFontStyle(`svg_modifier_style_fill`);
-                    break;
-                case "stroke":
-                    setFontStyle(`svg_modifier_style_stroke`);
-                    break;
-                default:
-                    setFontStyle(`svg_modifier_style_both`);
-                    break;
-            }
+        const fetchAndProcessSvg = async () => {
+            try {
+                // Check cache first
+                let svg = localStorage.getItem(cacheKey) || "";
 
-            const fetchSvg = async () => {
-                try {
-                    let svg =
-                        localStorage.getItem(`svgify_${version}_${IconName}`) ||
-                        "";
+                if (!svg && FetchIcon) {
+                    // Fetch from server
+                    const response = await FetchIcon(IconName);
 
-                    if (!svg && FetchIcon) {
-                        const response = await FetchIcon(IconName);
+                    if (response?.data) {
+                        svg = "" + response.data;
 
-                        if (response?.data) {
-                            svg = "" + response.data;
+                        // Validate SVG format
+                        if (svg.match(/<html/g)) {
+                            throw new Error("Invalid SVG format");
+                        }
 
-                            if (svg.match(/<html/g)) {
-                                throw new Error("Invalid SVG format");
-                            }
+                        // Process SVG
+                        svg = processSvg(svg, FontWeight);
 
-                            // Remove inline fill and stroke styles
-                            svg = svg
-                                .replace(/fill="[^"]*"/g, "")
-                                .replace(/stroke="[^"]*"/g, "");
-
-                            // Try to store the SVG in localStorage and handle storage quota
-                            try {
-                                localStorage.setItem(
-                                    `svgify_${version}_${IconName}`,
-                                    JSON.stringify(svg)
+                        // Cache the processed SVG
+                        try {
+                            localStorage.setItem(cacheKey, JSON.stringify(svg));
+                        } catch (e) {
+                            if (e instanceof DOMException && e.code === 22) {
+                                console.warn(
+                                    "Storage quota exceeded, clearing storage..."
                                 );
-                            } catch (e) {
-                                if (
-                                    e instanceof DOMException &&
-                                    e.code === 22
-                                ) {
-                                    console.warn(
-                                        "Storage quota exceeded, clearing storage..."
-                                    );
-                                    localStorage.clear(); // Optional: refine this to remove specific items
-                                } else {
-                                    throw e; // If it's not a quota error, rethrow it
-                                }
+                                localStorage.clear();
+                            } else {
+                                throw e;
                             }
                         }
-                    } else {
-                        svg = JSON.parse(svg);
                     }
-
-                    // Calculate aspect ratio
-                    const widthMatch = svg.match(
-                        /width="(\d+(\.\d+)?(px|em|rem|%)?)"/
-                    );
-                    const heightMatch = svg.match(
-                        /height="(\d+(\.\d+)?(px|em|rem|%)?)"/
-                    );
-                    let aspectRatio = 1;
-
-                    if (widthMatch && heightMatch) {
-                        const originalWidth = parseFloat(widthMatch[1]);
-                        const originalHeight = parseFloat(heightMatch[1]);
-                        aspectRatio = originalHeight / originalWidth;
-                    } else {
-                        // Add default width and height if missing
-                        if (!widthMatch)
-                            svg = svg.replace("<svg", `<svg width="1em"`);
-                        if (!heightMatch)
-                            svg = svg.replace("<svg", `<svg height="1em"`);
-                    }
-
-                    // Adjust dimensions based on Scale prop
-                    svg = svg.replace(
-                        /height="[^"]*"/,
-                        `height="${Scale * 1.5 * aspectRatio}em"`
-                    );
-                    svg = svg.replace(
-                        /width="[^"]*"/,
-                        `width="${Scale * 1.5}em"`
-                    );
-
-                    setFetched(true);
-                    setSvgContent(svg);
-                } catch (error) {
-                    setSvgContent("SVGIFY_ERROR");
-                    console.error("Error fetching SVG:", error);
+                } else {
+                    svg = JSON.parse(svg);
                 }
-            };
 
-            fetchSvg();
-        }
-    }, [IconName, Scale, FontWeight, version, clearForOldVersion]);
+                // Adjust dimensions
+                svg = adjustSvgDimensions(svg, Scale);
+
+                setSvgContent(svg);
+            } catch (error) {
+                setSvgContent("SVGIFY_ERROR");
+                console.error("Error fetching SVG:", error);
+            }
+        };
+
+        cleanupOldCache();
+        fetchAndProcessSvg();
+    }, [IconName, Scale, FontWeight, version, clearForOldVersion, FetchIcon]);
 
     return (
         <span
-            className={`svg-font-icon svg_modifier_style ${fontStyle} ${
-                className || ""
-            }`}
-            {...props}>
+            className={`svg-font-icon svg_modifier_style ${className || ""}`}
+            {...props}
+        >
             {svgContent
                 ? svgContent === "SVGIFY_ERROR"
                     ? NotFoundElement
@@ -166,6 +134,32 @@ const Svgify: React.FC<SvgifyProps> = ({
                 : LoadingElement}
         </span>
     );
+};
+
+/**
+ * Processes an SVG string by:
+ * 1. Inlining <style> blocks
+ * 2. Processing colors with transparency
+ * 3. Applying FontWeight logic
+ * 4. Cleaning root SVG attributes
+ */
+const processSvg = (svg: string, FontWeight: string): string => {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(svg, "image/svg+xml");
+
+    // Inline styles from <style> blocks
+    inlineStyleBlocks(doc);
+
+    // Process all elements
+    const allElements = doc.querySelectorAll("*");
+    allElements.forEach((el) => {
+        processElementColors(el, FontWeight);
+    });
+
+    // Clean root SVG
+    cleanRootSvg(doc);
+
+    return doc.documentElement.outerHTML;
 };
 
 export default Svgify;

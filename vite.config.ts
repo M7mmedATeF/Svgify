@@ -6,16 +6,16 @@ import dts from "vite-plugin-dts";
 export default defineConfig({
     build: {
         lib: {
-            entry: path.resolve(__dirname, "src/index.ts"),
-            name: "index",
-            // Generates different file names based on the format
-            fileName: (format) => {
-                if (format === "es") return "index.mjs"; // Use .mjs for ES modules
-                if (format === "cjs") return "index.cjs";
-                if (format === "umd") return "index.umd.js";
-                return "index.js"; // Default fallback to .js for iife or other formats
+            entry: {
+                index: path.resolve(__dirname, "src/index.ts"),
+                SvgifyContext: path.resolve(__dirname, "src/SvgifyContext.tsx"),
             },
-            formats: ["es", "cjs", "umd", "iife"], // Multiple formats
+            name: "svgify",
+            fileName: (format, entryName) => {
+                const ext = format === "es" ? "mjs" : format === "cjs" ? "cjs" : "js";
+                return `${entryName}.${ext}`;
+            },
+            formats: ["es", "cjs"],
         },
         rollupOptions: {
             external: ["react", "react-dom"],
