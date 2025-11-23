@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useEffect, useState } from "react";
 import parse from "html-react-parser";
 import { SvgifyProps } from "./types";

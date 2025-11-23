@@ -24,6 +24,38 @@
 - Fully tested and compatible with React 19.x
 - Uses latest React patterns and hooks
 
+### ⚡ Next.js Compatible
+> **✅ NEW:** Full Next.js support (App Router & Pages Router)
+
+Svgify now works seamlessly with Next.js! The library includes proper `"use client"` directives and is fully compatible with both the App Router and Pages Router.
+
+**Quick Start for Next.js:**
+
+1. Wrap your app with the `Svgifier` provider (in a client component)
+2. Use the `Svgify` component in any client component
+
+```jsx
+// app/providers.tsx (App Router)
+"use client";
+import { Svgifier } from "@sumcode/svgify";
+
+export function Providers({ children }) {
+  return <Svgifier base_path="/assets/icons">{children}</Svgifier>;
+}
+```
+
+```jsx
+// components/MyIcon.tsx
+"use client";
+import Svgify from "@sumcode/svgify";
+
+export function MyIcon() {
+  return <Svgify IconName="home" Scale={1.5} />;
+}
+```
+
+📚 **[See full Next.js documentation](#-nextjs-usage)** below for complete setup instructions.
+
 ## 🚀 Features
 
 -   🎯 **Dynamic SVG Rendering:** Fetches and displays SVG icons based on the provided `IconName`
@@ -117,7 +149,7 @@ function App() {
 }
 ```
 
-## 🌈 Duotone Icons (Beta)
+## 🎨 Duotone Icons (Beta)
 
 Svgify automatically handles duotone icons by preserving transparency:
 
@@ -175,6 +207,112 @@ createRoot(document.getElementById("root")!).render(
 );
 ```
 
+## 🌐 Next.js Usage
+
+Svgify is fully compatible with Next.js 13+ (App Router) and Next.js 12 (Pages Router). Since the library uses browser APIs like `localStorage` and `DOMParser`, components must be marked as client components.
+
+### App Router (Next.js 13+)
+
+**Step 1:** Create a providers component
+
+```jsx
+// app/providers.tsx
+"use client";
+
+import { Svgifier } from "@sumcode/svgify";
+
+export function Providers({ children }: { children: React.ReactNode }) {
+  return (
+    <Svgifier 
+      base_path="/assets/icons"
+      version={1}
+      clearForOldVersion={true}
+    >
+      {children}
+    </Svgifier>
+  );
+}
+```
+
+**Step 2:** Use in your root layout
+
+```jsx
+// app/layout.tsx
+import { Providers } from "./providers";
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="en">
+      <body>
+        <Providers>{children}</Providers>
+      </body>
+    </html>
+  );
+}
+```
+
+**Step 3:** Use Svgify in client components
+
+```jsx
+// components/MyComponent.tsx
+"use client";
+
+import Svgify from "@sumcode/svgify";
+
+export function MyComponent() {
+  return (
+    <div>
+      <Svgify IconName="home" Scale={1.5} />
+      <Svgify IconName="user" className="text-blue-500" />
+    </div>
+  );
+}
+```
+
+### Pages Router (Next.js 12)
+
+**Step 1:** Wrap your app in `_app.tsx`
+
+```jsx
+// pages/_app.tsx
+import { Svgifier } from "@sumcode/svgify";
+import type { AppProps } from "next/app";
+
+export default function App({ Component, pageProps }: AppProps) {
+  return (
+    <Svgifier base_path="/assets/icons" version={1}>
+      <Component {...pageProps} />
+    </Svgifier>
+  );
+}
+```
+
+**Step 2:** Use Svgify in your pages or components
+
+All components using Svgify must include the `"use client"` directive:
+
+```jsx
+// components/IconComponent.tsx
+"use client";
+
+import Svgify from "@sumcode/svgify";
+
+export default function IconComponent() {
+  return <Svgify IconName="settings" FontWeight="fill" />;
+}
+```
+
+### Important Next.js Notes
+
+- ✅ Always use `"use client"` directive in components that use Svgify
+- ✅ Place SVG files in the `public/assets/icons/` directory
+- ✅ Icons are cached in `localStorage` for better performance
+- ⚠️ Server components cannot use Svgify (browser APIs required)
+
 ## ⚙️ Component Props
 
 | Parameter         | Type                     | Default     | Description                                                      |
@@ -215,6 +353,7 @@ Exhaustive testing with 10K randomly generated icons: [🔗 Live Demo](https://s
 - ✨ Duotone icon support
 - ✨ Enhanced FontWeight modes (default, fill, stroke, both)
 - ⚛️ React 19 compatibility
+- ⚡ Next.js compatibility (App Router & Pages Router)
 - 🚀 Removed CSS dependency
 - 🐛 Fixed icon update on prop change
 
